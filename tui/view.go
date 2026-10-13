@@ -135,7 +135,7 @@ func (m *Model) viewProxies() string {
 				delay = fmtDelay(p.LastDelay())
 			}
 			dw := lipgloss.Width(delay)
-			row := fit(" "+mark+name, rw-dw-12) + fit(sMuted.Render(typ), 12) + delay
+			row := col(" "+mark+name, rw-dw-12) + col(sMuted.Render(typ), 12) + delay
 			if m.inMembers && i == m.pi {
 				row = sCursor.Render(ansi.Strip(row))
 			} else if name == g.Now {
@@ -182,7 +182,7 @@ func (m *Model) viewConns() string {
 	flex := max(m.w-fixed, 30)
 	tw, rw := flex*45/100, flex*20/100
 	cw := flex - tw - rw
-	head := fit(" TARGET", tw) + fit("RULE", rw) + fit("CHAIN", cw) + rpad("DOWN", 9) + rpad("UP", 9) + rpad("AGE", 6)
+	head := col(" TARGET", tw) + col("RULE", rw) + col("CHAIN", cw) + rpad("DOWN", 9) + rpad("UP", 9) + rpad("AGE", 6)
 	out := []string{sMuted.Render(fmt.Sprintf("%s  (%d conns, ↓ %s ↑ %s total)", head, len(list), units.Bytes(m.conns.DownloadTotal), units.Bytes(m.conns.UploadTotal)))}
 	out[0] = fit(out[0], m.w)
 	start, end := window(len(list), m.ci, h)
@@ -192,7 +192,7 @@ func (m *Model) viewConns() string {
 		if c.RulePayload != "" {
 			rule += "," + c.RulePayload
 		}
-		row := fit(" "+c.Target(), tw) + fit(rule, rw) + fit(chain(c.Chains), cw) +
+		row := col(" "+c.Target(), tw) + col(rule, rw) + col(chain(c.Chains), cw) +
 			rpad(units.Bytes(c.Download), 9) + rpad(units.Bytes(c.Upload), 9) + rpad(age(c.Start), 6)
 		if i == m.ci {
 			row = sCursor.Render(row)
@@ -231,7 +231,7 @@ func (m *Model) viewRules() string {
 	start, end := window(len(rules), m.ri, h)
 	for i := start; i < end; i++ {
 		r := rules[i]
-		row := fit(" "+r.Type, tw) + fit(r.Payload, pw) + fit(r.Proxy, m.w-tw-pw)
+		row := col(" "+r.Type, tw) + col(r.Payload, pw) + fit(r.Proxy, m.w-tw-pw)
 		if i == m.ri {
 			row = sCursor.Render(row)
 		}
@@ -277,6 +277,9 @@ func window(n, sel, h int) (int, int) {
 	}
 	return start, min(start+h, n)
 }
+
+// col is fit with a one-cell gutter on the right.
+func col(s string, w int) string { return fit(s, w-1) + " " }
 
 // fit truncates or pads s to exactly w terminal cells (CJK-aware).
 func fit(s string, w int) string {
