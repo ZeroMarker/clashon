@@ -1,4 +1,5 @@
 bin/
+/clashon
 dist/
 *.exe
 .idea/
