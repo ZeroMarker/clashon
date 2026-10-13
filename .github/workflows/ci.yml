@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+env:
+  CLASHON_TEST_SUB_URL: ${{ secrets.CLASHON_TEST_SUB_URL }}
+
 jobs:
   go:
     strategy:

@@ -3,3 +3,6 @@ dist/
 *.exe
 .idea/
 .vscode/
+.env
+.env.*
+!.env.example
