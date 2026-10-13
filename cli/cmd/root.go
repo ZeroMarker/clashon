@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"os/signal"
 	"syscall"
@@ -31,6 +32,15 @@ func requireCore() (*env, error) {
 	return &env{a}, nil
 }
 
+// jsonOut makes commands print machine-readable output for front ends.
+var jsonOut bool
+
+func printJSON(v any) error {
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	return enc.Encode(v)
+}
+
 func signalContext() (context.Context, context.CancelFunc) {
 	return signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 }
@@ -42,6 +52,7 @@ func Execute() error {
 		Short:        "Clash (mihomo) client",
 		SilenceUsage: true,
 	}
-	root.AddCommand(upCmd(), downCmd(), statusCmd(), subCmd(), proxyCmd(), modeCmd(), ruleCmd(), logCmd(), tuiCmd(), versionCmd(), coreCmd())
+	root.PersistentFlags().BoolVar(&jsonOut, "json", false, "machine-readable output")
+	root.AddCommand(upCmd(), downCmd(), statusCmd(), subCmd(), proxyCmd(), modeCmd(), ruleCmd(), logCmd(), tuiCmd(), sysproxyCmd(), versionCmd(), coreCmd())
 	return root.Execute()
 }

@@ -47,6 +47,9 @@ func subCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if jsonOut {
+				return printJSON(map[string]any{"current": cur, "profiles": ps})
+			}
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 			fmt.Fprintln(w, "\tNAME\tUPDATED\tUSED/TOTAL\tEXPIRE")
 			for _, p := range ps {

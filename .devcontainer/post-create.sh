@@ -9,7 +9,8 @@ go install golang.org/x/mobile/cmd/gobind@latest
 
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends \
-  clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
+  clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev \
+  libayatana-appindicator3-dev tmux xvfb
 
 if [ ! -d "$HOME/flutter" ]; then
   git clone --depth 1 -b stable https://github.com/flutter/flutter.git "$HOME/flutter"
