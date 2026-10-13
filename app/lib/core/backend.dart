@@ -63,13 +63,17 @@ class Backend {
 
   final String binary;
 
-  /// Finds the CLI: $CLASHON_BIN, next to the app executable, then PATH.
+  /// Finds the CLI: $CLASHON_BIN, bundled with the app, then PATH.
+  /// It sits next to the executable, except on macOS where it lives in
+  /// Contents/Resources (the case-insensitive filesystem would clash with
+  /// the ClashOn executable).
   static String locate() {
     final env = Platform.environment['CLASHON_BIN'];
     if (env != null && env.isNotEmpty) return env;
     final name = Platform.isWindows ? 'clashon.exe' : 'clashon';
-    final beside = p.join(p.dirname(Platform.resolvedExecutable), name);
-    if (File(beside).existsSync()) return beside;
+    final dir = p.dirname(Platform.resolvedExecutable);
+    final bundled = Platform.isMacOS ? p.join(dir, '..', 'Resources', name) : p.join(dir, name);
+    if (File(bundled).existsSync()) return bundled;
     return name;
   }
 
