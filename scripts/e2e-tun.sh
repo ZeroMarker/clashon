@@ -28,7 +28,6 @@ ip -br link | grep -iE 'meta|utun'
 code=$(curl -s -m 20 -o /dev/null -w '%{http_code}' https://www.gstatic.com/generate_204)
 echo "direct curl through TUN: HTTP $code"
 [ "$code" = 204 ]
-curl -s -H "Authorization: Bearer $(python3 -c 'import json,os;print(json.load(open(os.environ["CLASHON_HOME"]+"/settings.json"))["secret"])')" \
-  http://127.0.0.1:9090/connections | grep -q '"type":"Tun"' || \
-  grep -q 'gstatic' "$CLASHON_HOME/core.log"
+# The connection must have entered via the TUN gateway, not the mixed port.
+grep -q '\[TCP\] 198\.18\.0\.1:[0-9]* --> .*:443 match' "$CLASHON_HOME/core.log"
 echo "TUN e2e ok"
