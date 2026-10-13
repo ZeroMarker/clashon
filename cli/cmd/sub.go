@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+
+	"github.com/ZeroMarker/clashon/sdk/units"
 )
 
 func subCmd() *cobra.Command {
@@ -22,7 +24,7 @@ func subCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			p, err := e.store.Add(cmd.Context(), name, args[0])
+			p, err := e.Store.Add(cmd.Context(), name, args[0])
 			if err != nil {
 				return err
 			}
@@ -41,7 +43,7 @@ func subCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			ps, cur, err := e.store.List()
+			ps, cur, err := e.Store.List()
 			if err != nil {
 				return err
 			}
@@ -53,7 +55,7 @@ func subCmd() *cobra.Command {
 					mark = "*"
 				}
 				if u := p.UserInfo; u != nil {
-					usage = fmt.Sprintf("%s/%s", bytes(u.Upload+u.Download), bytes(u.Total))
+					usage = fmt.Sprintf("%s/%s", units.Bytes(u.Upload+u.Download), units.Bytes(u.Total))
 					if !u.Expire.IsZero() {
 						expire = u.Expire.Format("2006-01-02")
 					}
@@ -73,7 +75,7 @@ func subCmd() *cobra.Command {
 				return err
 			}
 			if len(args) == 0 {
-				ps, _, err := e.store.List()
+				ps, _, err := e.Store.List()
 				if err != nil {
 					return err
 				}
@@ -82,7 +84,7 @@ func subCmd() *cobra.Command {
 				}
 			}
 			for _, n := range args {
-				if _, err := e.store.Update(cmd.Context(), n); err != nil {
+				if _, err := e.Store.Update(cmd.Context(), n); err != nil {
 					return fmt.Errorf("%s: %w", n, err)
 				}
 				fmt.Printf("updated %s\n", n)
@@ -100,7 +102,7 @@ func subCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if err := e.store.Use(args[0]); err != nil {
+			if err := e.Store.Use(args[0]); err != nil {
 				return err
 			}
 			fmt.Printf("using %s\n", args[0])
@@ -117,7 +119,7 @@ func subCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return e.store.Remove(args[0])
+			return e.Store.Remove(args[0])
 		},
 	}
 
@@ -126,29 +128,16 @@ func subCmd() *cobra.Command {
 }
 
 func (e *env) reloadIfRunning(cmd *cobra.Command) error {
-	if _, err := e.daemon.PID(); err != nil {
+	if _, err := e.Daemon.PID(); err != nil {
 		return nil
 	}
 	path, err := e.writeRuntimeConfig()
 	if err != nil {
 		return err
 	}
-	if err := e.client.Reload(cmd.Context(), path); err != nil {
+	if err := e.Client.Reload(cmd.Context(), path); err != nil {
 		return err
 	}
 	fmt.Println("core reloaded")
 	return nil
-}
-
-func bytes(n int64) string {
-	const unit = 1024
-	if n < unit {
-		return fmt.Sprintf("%dB", n)
-	}
-	div, exp := int64(unit), 0
-	for m := n / unit; m >= unit; m /= unit {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%.1f%ciB", float64(n)/float64(div), "KMGTPE"[exp])
 }

@@ -26,7 +26,7 @@ func proxyCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			all, err := e.client.Proxies(cmd.Context())
+			all, err := e.Client.Proxies(cmd.Context())
 			if err != nil {
 				return err
 			}
@@ -78,7 +78,7 @@ func proxyCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if err := e.client.Select(cmd.Context(), args[0], args[1]); err != nil {
+			if err := e.Client.Select(cmd.Context(), args[0], args[1]); err != nil {
 				return err
 			}
 			fmt.Printf("%s -> %s\n", args[0], args[1])
@@ -97,7 +97,7 @@ func proxyCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			res, err := e.client.Delay(cmd.Context(), args[0], testURL, timeout)
+			res, err := e.Client.Delay(cmd.Context(), args[0], testURL, timeout)
 			if err != nil {
 				return err
 			}
@@ -147,7 +147,7 @@ func modeCmd() *cobra.Command {
 				return err
 			}
 			if len(args) == 0 {
-				cfg, err := e.client.Configs(cmd.Context())
+				cfg, err := e.Client.Configs(cmd.Context())
 				if err != nil {
 					return err
 				}
@@ -157,7 +157,7 @@ func modeCmd() *cobra.Command {
 			if err := cobra.OnlyValidArgs(cmd, args); err != nil {
 				return err
 			}
-			return e.client.PatchConfigs(cmd.Context(), map[string]any{"mode": args[0]})
+			return e.Client.PatchConfigs(cmd.Context(), map[string]any{"mode": args[0]})
 		},
 	}
 }
@@ -174,7 +174,7 @@ func ruleCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			rules, err := e.client.Rules(cmd.Context())
+			rules, err := e.Client.Rules(cmd.Context())
 			if err != nil {
 				return err
 			}
@@ -204,7 +204,7 @@ func logCmd() *cobra.Command {
 			}
 			ctx, stop := signalContext()
 			defer stop()
-			return e.client.Logs(ctx, level, func(l api.LogEntry) bool {
+			return e.Client.Logs(ctx, level, func(l api.LogEntry) bool {
 				fmt.Printf("%s %-7s %s\n", time.Now().Format(time.TimeOnly), l.Type, l.Payload)
 				return true
 			})

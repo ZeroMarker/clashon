@@ -17,27 +17,27 @@ import (
 
 // writeRuntimeConfig merges the current profile with settings.
 func (e *env) writeRuntimeConfig() (string, error) {
-	p, err := e.store.Current()
+	p, err := e.Store.Current()
 	if err != nil {
 		return "", err
 	}
-	raw, err := os.ReadFile(e.store.File(p.Name))
+	raw, err := os.ReadFile(e.Store.File(p.Name))
 	if err != nil {
 		return "", err
 	}
-	merged, err := config.Merge(raw, e.settings)
+	merged, err := config.Merge(raw, e.Settings)
 	if err != nil {
 		return "", err
 	}
-	if err := os.MkdirAll(e.layout.CoreHome(), 0o700); err != nil {
+	if err := os.MkdirAll(e.Layout.CoreHome(), 0o700); err != nil {
 		return "", err
 	}
-	path := e.layout.RuntimeConfig()
+	path := e.Layout.RuntimeConfig()
 	return path, os.WriteFile(path, merged, 0o600)
 }
 
 func (e *env) runnerOptions() runner.Options {
-	return runner.Options{HomeDir: e.layout.CoreHome(), ConfigFile: e.layout.RuntimeConfig()}
+	return runner.Options{HomeDir: e.Layout.CoreHome(), ConfigFile: e.Layout.RuntimeConfig()}
 }
 
 func upCmd() *cobra.Command {
@@ -56,22 +56,22 @@ func upCmd() *cobra.Command {
 			if foreground {
 				ctx, stop := signalContext()
 				defer stop()
-				fmt.Printf("mixed proxy on :%d, controller %s (Ctrl-C to stop)\n", e.settings.MixedPort, e.settings.Controller)
+				fmt.Printf("mixed proxy on :%d, controller %s (Ctrl-C to stop)\n", e.Settings.MixedPort, e.Settings.Controller)
 				return runner.Run(ctx, e.runnerOptions())
 			}
 			exe, err := os.Executable()
 			if err != nil {
 				return err
 			}
-			pid, err := e.daemon.Start(exe, "core", "run")
+			pid, err := e.Daemon.Start(exe, "core", "run")
 			if err != nil {
 				return err
 			}
 			if err := e.waitReady(15 * time.Second); err != nil {
-				_ = e.daemon.Stop()
-				return fmt.Errorf("%w\n%s", err, tail(e.layout.LogFile(), 20))
+				_ = e.Daemon.Stop()
+				return fmt.Errorf("%w\n%s", err, tail(e.Layout.LogFile(), 20))
 			}
-			fmt.Printf("core started (pid %d): mixed proxy 127.0.0.1:%d, controller %s\n", pid, e.settings.MixedPort, e.settings.Controller)
+			fmt.Printf("core started (pid %d): mixed proxy 127.0.0.1:%d, controller %s\n", pid, e.Settings.MixedPort, e.Settings.Controller)
 			return nil
 		},
 	}
@@ -82,11 +82,11 @@ func upCmd() *cobra.Command {
 func (e *env) waitReady(timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
-		if _, err := e.daemon.PID(); err != nil {
+		if _, err := e.Daemon.PID(); err != nil {
 			return errors.New("core exited during startup")
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		_, err := e.client.Version(ctx)
+		_, err := e.Client.Version(ctx)
 		cancel()
 		if err == nil {
 			return nil
@@ -117,7 +117,7 @@ func downCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if err := e.daemon.Stop(); err != nil {
+			if err := e.Daemon.Stop(); err != nil {
 				return err
 			}
 			fmt.Println("core stopped")
@@ -136,10 +136,10 @@ func statusCmd() *cobra.Command {
 				return err
 			}
 			cur := "-"
-			if p, err := e.store.Current(); err == nil {
+			if p, err := e.Store.Current(); err == nil {
 				cur = p.Name
 			}
-			pid, err := e.daemon.PID()
+			pid, err := e.Daemon.PID()
 			if errors.Is(err, daemon.ErrNotRunning) {
 				fmt.Printf("core:    stopped\nprofile: %s\n", cur)
 				return nil
@@ -148,8 +148,8 @@ func statusCmd() *cobra.Command {
 				return err
 			}
 			ctx := cmd.Context()
-			v, verr := e.client.Version(ctx)
-			cfg, cerr := e.client.Configs(ctx)
+			v, verr := e.Client.Version(ctx)
+			cfg, cerr := e.Client.Configs(ctx)
 			if verr != nil || cerr != nil {
 				fmt.Printf("core:    running (pid %d), controller unreachable\nprofile: %s\n", pid, cur)
 				return nil

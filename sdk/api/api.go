@@ -124,12 +124,75 @@ func (c *Client) PatchConfigs(ctx context.Context, patch map[string]any) error {
 
 // Logs streams log entries at level until ctx is done or fn returns false.
 func (c *Client) Logs(ctx context.Context, level string, fn func(LogEntry) bool) error {
-	req, err := c.request(ctx, http.MethodGet, "/logs?level="+url.QueryEscape(level), nil)
+	return stream(c, ctx, "/logs?level="+url.QueryEscape(level), fn)
+}
+
+// Traffic streams per-second throughput until ctx is done or fn returns false.
+func (c *Client) Traffic(ctx context.Context, fn func(Traffic) bool) error {
+	return stream(c, ctx, "/traffic", fn)
+}
+
+type Traffic struct {
+	Up   int64 `json:"up"`
+	Down int64 `json:"down"`
+}
+
+type Connection struct {
+	ID       string `json:"id"`
+	Metadata struct {
+		Network         string `json:"network"`
+		Type            string `json:"type"`
+		SourceIP        string `json:"sourceIP"`
+		DestinationIP   string `json:"destinationIP"`
+		DestinationPort string `json:"destinationPort"`
+		Host            string `json:"host"`
+		Process         string `json:"process"`
+	} `json:"metadata"`
+	Upload      int64     `json:"upload"`
+	Download    int64     `json:"download"`
+	Start       time.Time `json:"start"`
+	Chains      []string  `json:"chains"`
+	Rule        string    `json:"rule"`
+	RulePayload string    `json:"rulePayload"`
+}
+
+// Target returns host:port, falling back to the destination IP.
+func (c *Connection) Target() string {
+	h := c.Metadata.Host
+	if h == "" {
+		h = c.Metadata.DestinationIP
+	}
+	return h + ":" + c.Metadata.DestinationPort
+}
+
+type Connections struct {
+	DownloadTotal int64        `json:"downloadTotal"`
+	UploadTotal   int64        `json:"uploadTotal"`
+	Connections   []Connection `json:"connections"`
+}
+
+func (c *Client) Connections(ctx context.Context) (*Connections, error) {
+	v := &Connections{}
+	return v, c.do(ctx, http.MethodGet, "/connections", nil, v)
+}
+
+// CloseConnection closes one connection, or all if id is empty.
+func (c *Client) CloseConnection(ctx context.Context, id string) error {
+	p := "/connections"
+	if id != "" {
+		p += "/" + url.PathEscape(id)
+	}
+	return c.do(ctx, http.MethodDelete, p, nil, nil)
+}
+
+// stream reads newline-delimited JSON from a streaming endpoint.
+func stream[T any](c *Client, ctx context.Context, path string, fn func(T) bool) error {
+	req, err := c.request(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return err
 	}
-	stream := &http.Client{Transport: c.httpClient().Transport} // no timeout for streams
-	resp, err := stream.Do(req)
+	client := &http.Client{Transport: c.httpClient().Transport} // no timeout for streams
+	resp, err := client.Do(req)
 	if err != nil {
 		if ctx.Err() != nil {
 			return nil
@@ -142,11 +205,11 @@ func (c *Client) Logs(ctx context.Context, level string, fn func(LogEntry) bool)
 	}
 	sc := bufio.NewScanner(resp.Body)
 	for sc.Scan() {
-		var e LogEntry
-		if json.Unmarshal(sc.Bytes(), &e) != nil {
+		var v T
+		if json.Unmarshal(sc.Bytes(), &v) != nil {
 			continue
 		}
-		if !fn(e) {
+		if !fn(v) {
 			return nil
 		}
 	}

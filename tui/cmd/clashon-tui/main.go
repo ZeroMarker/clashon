@@ -1,7 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+
+	"github.com/ZeroMarker/clashon/sdk/app"
+	"github.com/ZeroMarker/clashon/tui"
+)
 
 func main() {
-	fmt.Println("clashon-tui: not implemented yet")
+	a, err := app.RequireCore()
+	if err == nil {
+		err = tui.Run(a)
+	}
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		os.Exit(1)
+	}
 }
