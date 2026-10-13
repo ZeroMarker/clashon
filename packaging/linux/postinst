@@ -1,5 +1,12 @@
 #!/bin/sh
 set -e
-# Let the core create a TUN device without running as root.
-setcap cap_net_admin,cap_net_bind_service=+ep /opt/clashon/clashon || true
+# Let the core create a TUN device without running as root. Skip where the
+# capability is outside the bounding set (containers): a binary carrying it
+# would then fail to execute at all.
+bnd=$(awk '/^CapBnd:/ {print $2}' /proc/self/status)
+if [ $(( 0x$bnd >> 12 & 1 )) -eq 1 ]; then
+  setcap cap_net_admin,cap_net_bind_service=+ep /opt/clashon/clashon || true
+else
+  echo "clashon: CAP_NET_ADMIN unavailable here, TUN mode disabled" >&2
+fi
 command -v update-desktop-database >/dev/null && update-desktop-database -q /usr/share/applications || true

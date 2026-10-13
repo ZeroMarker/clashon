@@ -5,7 +5,6 @@ name: release
 on:
   push:
     tags: ["v*"]
-    branches: [m3-release] # TEMP: test packaging before merge
   workflow_dispatch:
 
 permissions:
