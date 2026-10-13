@@ -22,7 +22,9 @@ class CoreStatus {
       mode = j['mode'] as String?,
       mixedPort = j['mixedPort'] as int? ?? 0,
       controller = j['controller'] as String? ?? '',
-      secret = j['secret'] as String? ?? '';
+      secret = j['secret'] as String? ?? '',
+      tun = j['tun'] as bool? ?? false,
+      tunReady = j['tunReady'] as bool? ?? false;
 
   final bool running;
   final bool reachable;
@@ -33,6 +35,8 @@ class CoreStatus {
   final int mixedPort;
   final String controller;
   final String secret;
+  final bool tun;
+  final bool tunReady;
 }
 
 class Profile {
@@ -113,4 +117,20 @@ class Backend {
   Future<void> setSystemProxy(bool on) => _run(['sysproxy', on ? 'on' : 'off']);
   Future<bool> systemProxy() async =>
       (jsonDecode(await _run(['sysproxy'])) as Map<String, dynamic>)['enabled'] as bool? ?? false;
+
+  Future<void> setTun(bool on) => _run(['tun', on ? 'on' : 'off']);
+
+  /// Adds a subscription from a clash:// link and returns its name.
+  Future<String> importLink(String link) async =>
+      (jsonDecode(await _run(['import', link])) as Map<String, dynamic>)['name'] as String;
+
+  Future<bool> autostart() async =>
+      (jsonDecode(await _run(['desktop', 'autostart'])) as Map<String, dynamic>)['enabled']
+          as bool? ??
+      false;
+
+  Future<void> setAutostart(bool on, String exe) =>
+      _run(['desktop', 'autostart', on ? 'on' : 'off', '--exec', exe]);
+
+  Future<void> registerSchemes(String exe) => _run(['desktop', 'register', '--exec', exe]);
 }

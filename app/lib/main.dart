@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
@@ -11,14 +12,17 @@ import 'ui/home.dart';
 
 bool get isDesktop => Platform.isLinux || Platform.isMacOS || Platform.isWindows;
 
-Future<void> main() async {
+Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   final state = AppState(Backend());
+  // Started at login: stay in the tray.
+  final minimized = args.contains('--minimized');
   if (isDesktop) {
     await windowManager.ensureInitialized();
     await windowManager.waitUntilReadyToShow(
       const WindowOptions(size: Size(1000, 700), minimumSize: Size(720, 480), title: 'ClashOn'),
       () async {
+        if (minimized) return;
         await windowManager.show();
         await windowManager.focus();
       },
@@ -26,6 +30,10 @@ Future<void> main() async {
   }
   runApp(ClashOnApp(state: state));
   unawaited(state.init());
+  // Keep clash:// pointing at this build; macOS uses Info.plist instead.
+  if (Platform.isLinux || Platform.isWindows) {
+    unawaited(state.backend.registerSchemes(Platform.resolvedExecutable).catchError((_) {}));
+  }
 }
 
 class ClashOnApp extends StatefulWidget {
@@ -38,12 +46,18 @@ class ClashOnApp extends StatefulWidget {
 
 class _ClashOnAppState extends State<ClashOnApp> with WindowListener, TrayListener {
   Timer? _poll;
+  StreamSubscription<Uri>? _links;
 
   @override
   void initState() {
     super.initState();
     // Pick up core started/stopped from the CLI or TUI.
     _poll = Timer.periodic(const Duration(seconds: 5), (_) => widget.state.refresh());
+    // Covers the launch link and links forwarded from later launches.
+    _links = AppLinks().uriLinkStream.listen((uri) async {
+      if (isDesktop) await _show();
+      await widget.state.importLink(uri.toString());
+    });
     if (isDesktop) {
       windowManager.addListener(this);
       windowManager.setPreventClose(true);
@@ -58,7 +72,9 @@ class _ClashOnAppState extends State<ClashOnApp> with WindowListener, TrayListen
       await trayManager.setIcon(Platform.isWindows ? 'assets/tray.ico' : 'assets/tray.png');
       await _updateTrayMenu();
     } catch (_) {
-      // No tray on this desktop (e.g. GNOME without AppIndicator); closing quits instead.
+      // No tray on this desktop (e.g. GNOME without AppIndicator); closing
+      // quits instead, and a minimized start must not leave the app invisible.
+      await _show();
     }
   }
 
@@ -130,6 +146,7 @@ class _ClashOnAppState extends State<ClashOnApp> with WindowListener, TrayListen
   @override
   void dispose() {
     _poll?.cancel();
+    _links?.cancel();
     windowManager.removeListener(this);
     trayManager.removeListener(this);
     super.dispose();
