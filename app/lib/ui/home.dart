@@ -6,6 +6,7 @@ import 'pages/dashboard_page.dart';
 import 'pages/logs_page.dart';
 import 'pages/profiles_page.dart';
 import 'pages/proxies_page.dart';
+import 'pages/settings_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.state});
@@ -24,6 +25,7 @@ class _HomePageState extends State<HomePage> {
     (Icons.description_outlined, Icons.description, '订阅'),
     (Icons.swap_vert_outlined, Icons.swap_vert, '连接'),
     (Icons.article_outlined, Icons.article, '日志'),
+    (Icons.settings_outlined, Icons.settings, '设置'),
   ];
 
   void _select(int i) {
@@ -42,7 +44,8 @@ class _HomePageState extends State<HomePage> {
           1 => ProxiesPage(state: s),
           2 => ProfilesPage(state: s),
           3 => ConnectionsPage(state: s),
-          _ => LogsPage(state: s),
+          4 => LogsPage(state: s),
+          _ => SettingsPage(state: s),
         };
         return Scaffold(
           body: Row(
@@ -72,7 +75,7 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 child: Column(
                   children: [
-                    if (s.error != null) _ErrorBanner(state: s),
+                    if (s.error != null || s.notice != null) _ErrorBanner(state: s),
                     if (s.busy) const LinearProgressIndicator(minHeight: 2),
                     Expanded(child: page),
                   ],
@@ -92,10 +95,12 @@ class _ErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isError = state.error != null;
     return MaterialBanner(
-      content: Text(state.error!),
-      leading: const Icon(Icons.error_outline),
-      backgroundColor: Theme.of(context).colorScheme.errorContainer,
+      content: Text(state.error ?? state.notice!),
+      leading: Icon(isError ? Icons.error_outline : Icons.check_circle_outline),
+      backgroundColor: isError ? scheme.errorContainer : scheme.secondaryContainer,
       actions: [TextButton(onPressed: state.clearError, child: const Text('关闭'))],
     );
   }

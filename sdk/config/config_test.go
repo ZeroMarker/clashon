@@ -43,3 +43,31 @@ func TestLoadSettingsCreatesDefaults(t *testing.T) {
 		t.Fatalf("secret not persisted: %q vs %q", a.Secret, b.Secret)
 	}
 }
+
+func TestMergeTUN(t *testing.T) {
+	in := []byte("dns:\n  enable: false\n  nameserver: [1.2.3.4]\ntun:\n  stack: gvisor\n")
+	out, err := Merge(in, Settings{TUN: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc struct {
+		TUN map[string]any `yaml:"tun"`
+		DNS map[string]any `yaml:"dns"`
+	}
+	if err := yaml.Unmarshal(out, &doc); err != nil {
+		t.Fatal(err)
+	}
+	if doc.TUN["enable"] != true || doc.TUN["stack"] != "gvisor" || doc.TUN["auto-route"] != true {
+		t.Fatalf("tun = %v", doc.TUN)
+	}
+	if doc.DNS["enable"] != true || doc.DNS["nameserver"].([]any)[0] != "1.2.3.4" {
+		t.Fatalf("dns = %v", doc.DNS)
+	}
+
+	out, _ = Merge(in, Settings{TUN: false})
+	doc.TUN = nil
+	yaml.Unmarshal(out, &doc)
+	if doc.TUN != nil {
+		t.Fatal("tun should be removed when disabled")
+	}
+}

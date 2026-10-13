@@ -18,6 +18,7 @@ class AppState extends ChangeNotifier {
   CoreStatus? status;
   MihomoApi? api;
   String? error;
+  String? notice; // transient success message
   bool busy = false;
 
   List<Profile> profiles = [];
@@ -29,6 +30,10 @@ class AppState extends ChangeNotifier {
 
   String mode = 'rule';
   bool systemProxy = false;
+  bool autostart = false;
+
+  bool get tun => status?.tun ?? false;
+  bool get tunReady => status?.tunReady ?? false;
 
   static const historyLength = 60;
   final ListQueue<Traffic> trafficHistory = ListQueue();
@@ -49,6 +54,7 @@ class AppState extends ChangeNotifier {
   Future<void> init() async {
     await refresh();
     await _guard(() async => systemProxy = await backend.systemProxy());
+    await _guard(() async => autostart = await backend.autostart());
   }
 
   /// Reloads status and profiles, (re)connecting to the core if it is up.
@@ -104,6 +110,23 @@ class AppState extends ChangeNotifier {
     systemProxy = on;
   });
 
+  Future<void> setTun(bool on) => _guard(() async {
+    await backend.setTun(on);
+    await refresh();
+  }, busyFlag: true);
+
+  Future<void> setAutostart(bool on, String exe) => _guard(() async {
+    await backend.setAutostart(on, exe);
+    autostart = on;
+  });
+
+  /// Handles a clash://install-config link.
+  Future<void> importLink(String link) => _guard(() async {
+    final name = await backend.importLink(link);
+    await refresh();
+    notice = '已导入订阅 $name';
+  }, busyFlag: true);
+
   Future<void> setMode(String m) => _guard(() async {
     await api!.setMode(m);
     mode = m;
@@ -145,6 +168,7 @@ class AppState extends ChangeNotifier {
 
   void clearError() {
     error = null;
+    notice = null;
     notifyListeners();
   }
 

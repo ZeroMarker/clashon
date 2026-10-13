@@ -13,6 +13,7 @@ import (
 	"github.com/ZeroMarker/clashon/core/runner"
 	"github.com/ZeroMarker/clashon/sdk/config"
 	"github.com/ZeroMarker/clashon/sdk/daemon"
+	"github.com/ZeroMarker/clashon/sdk/privilege"
 )
 
 // writeRuntimeConfig merges the current profile with settings.
@@ -137,10 +138,18 @@ type Status struct {
 	MixedPort  int    `json:"mixedPort"`
 	Controller string `json:"controller"`
 	Secret     string `json:"secret"`
+	TUN        bool   `json:"tun"`
+	TUNReady   bool   `json:"tunReady"` // privileges for TUN are in place
 }
 
 func (e *env) status(ctx context.Context) (*Status, error) {
-	st := &Status{MixedPort: e.Settings.MixedPort, Controller: e.Settings.Controller, Secret: e.Settings.Secret}
+	st := &Status{
+		MixedPort:  e.Settings.MixedPort,
+		Controller: e.Settings.Controller,
+		Secret:     e.Settings.Secret,
+		TUN:        e.Settings.TUN,
+		TUNReady:   privilege.Check() == nil,
+	}
 	if p, err := e.Store.Current(); err == nil {
 		st.Profile = p.Name
 	}

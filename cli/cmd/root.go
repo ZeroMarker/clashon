@@ -53,6 +53,6 @@ func Execute() error {
 		SilenceUsage: true,
 	}
 	root.PersistentFlags().BoolVar(&jsonOut, "json", false, "machine-readable output")
-	root.AddCommand(upCmd(), downCmd(), statusCmd(), subCmd(), proxyCmd(), modeCmd(), ruleCmd(), logCmd(), tuiCmd(), sysproxyCmd(), versionCmd(), coreCmd())
+	root.AddCommand(upCmd(), downCmd(), statusCmd(), subCmd(), proxyCmd(), modeCmd(), ruleCmd(), logCmd(), tuiCmd(), sysproxyCmd(), tunCmd(), serviceCmd(), importCmd(), desktopCmd(), versionCmd(), coreCmd())
 	return root.Execute()
 }

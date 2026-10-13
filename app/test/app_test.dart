@@ -58,6 +58,21 @@ class FakeBackend implements Backend {
   Future<void> setSystemProxy(bool on) async => sysproxy = on;
   @override
   Future<bool> systemProxy() async => sysproxy;
+  @override
+  Future<void> setTun(bool on) async => calls.add('tun $on');
+  @override
+  Future<String> importLink(String link) async {
+    calls.add('import $link');
+    return 'imported';
+  }
+
+  bool auto = false;
+  @override
+  Future<bool> autostart() async => auto;
+  @override
+  Future<void> setAutostart(bool on, String exe) async => auto = on;
+  @override
+  Future<void> registerSchemes(String exe) async {}
 }
 
 MihomoApi fakeApi(String controller, String secret) {
@@ -143,6 +158,13 @@ void main() {
     await s.setSystemProxy(true);
     expect(b.sysproxy, isTrue);
 
+    await s.importLink('clash://install-config?url=https://a/b');
+    expect(s.notice, contains('imported'));
+    expect(b.calls.last, startsWith('import clash://'));
+
+    await s.setAutostart(true, '/x/clashon-gui');
+    expect(s.autostart, isTrue);
+
     await s.toggleCore();
     expect(s.running, isFalse);
     expect(s.groups, isEmpty);
@@ -175,6 +197,11 @@ void main() {
     await tester.tap(find.text('日志'));
     await tester.pump();
     expect(find.textContaining('hello', findRichText: true), findsOneWidget);
+
+    await tester.tap(find.text('设置'));
+    await tester.pump();
+    expect(find.text('TUN 模式'), findsOneWidget);
+    expect(find.textContaining('sudo clashon service install'), findsOneWidget);
 
     await tester.runAsync(s.toggleCore);
     s.dispose();
