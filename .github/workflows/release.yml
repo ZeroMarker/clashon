@@ -1,0 +1,124 @@
+name: release
+
+# Tags v* build and publish a GitHub Release. Manual runs build the same
+# packages as workflow artifacts without publishing anything.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      build-name: ${{ steps.v.outputs.build-name }}
+    steps:
+      - id: v
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            v=${GITHUB_REF#refs/tags/v}
+          else
+            v=0.0.0-dev.${GITHUB_SHA::7}
+          fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "build-name=${v%%-*}" >> "$GITHUB_OUTPUT"
+
+  cli:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive, fetch-depth: 0 }
+      - uses: actions/setup-go@v5
+        with: { go-version: stable }
+      - run: scripts/package-cli.sh ${{ needs.version.outputs.version }}
+      - uses: actions/upload-artifact@v4
+        with: { name: cli, path: dist/* }
+
+  linux:
+    needs: version
+    runs-on: ubuntu-22.04 # older glibc so the bundle runs on more distros
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive, fetch-depth: 0 }
+      - uses: actions/setup-go@v5
+        with: { go-version: stable }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build libgtk-3-dev libayatana-appindicator3-dev
+      - run: flutter build linux --release --build-name ${{ needs.version.outputs.build-name }} --build-number ${{ github.run_number }}
+        working-directory: app
+      - run: scripts/package-linux.sh ${{ needs.version.outputs.version }}
+      - name: Smoke test the .deb
+        run: |
+          sudo apt-get install -y ./dist/clashon_*_amd64.deb
+          clashon version
+          getcap /opt/clashon/clashon | grep cap_net_admin
+          test -x /opt/clashon/clashon-gui
+      - uses: actions/upload-artifact@v4
+        with: { name: linux, path: dist/* }
+
+  macos:
+    needs: version
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive, fetch-depth: 0 }
+      - uses: actions/setup-go@v5
+        with: { go-version: stable }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter build macos --release --build-name ${{ needs.version.outputs.build-name }} --build-number ${{ github.run_number }}
+        working-directory: app
+      - run: scripts/package-macos.sh ${{ needs.version.outputs.version }}
+      - name: Smoke test the bundle
+        run: |
+          app=app/build/macos/Build/Products/Release/ClashOn.app
+          lipo -archs "$app/Contents/Resources/clashon"
+          "$app/Contents/Resources/clashon" version
+          codesign --verify --deep "$app"
+      - uses: actions/upload-artifact@v4
+        with: { name: macos, path: dist/* }
+
+  windows:
+    needs: version
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive, fetch-depth: 0 }
+      - uses: actions/setup-go@v5
+        with: { go-version: stable }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter build windows --release --build-name ${{ needs.version.outputs.build-name }} --build-number ${{ github.run_number }}
+        working-directory: app
+      - run: scripts/package-windows.sh ${{ needs.version.outputs.version }}
+      - name: Smoke test the installer
+        run: |
+          ./dist/ClashOn-*-setup.exe //VERYSILENT //SUPPRESSMSGBOXES //NORESTART
+          for i in $(seq 30); do [ -f "$LOCALAPPDATA/Programs/ClashOn/clashon.exe" ] && break; sleep 2; done
+          "$LOCALAPPDATA/Programs/ClashOn/clashon.exe" version
+          test -f "$LOCALAPPDATA/Programs/ClashOn/clashon-gui.exe"
+      - uses: actions/upload-artifact@v4
+        with: { name: windows, path: dist/* }
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [version, cli, linux, macos, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: dist, merge-multiple: true }
+      - run: cd dist && sha256sum * > SHA256SUMS
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          prerelease: ${{ contains(needs.version.outputs.version, '-') }}

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=ClashOn
+Comment=Clash (mihomo) client
+Exec=/opt/clashon/clashon-gui %u
+Icon=dev.clashon.clashon
+Categories=Network;
+Terminal=false
+MimeType=x-scheme-handler/clash;x-scheme-handler/clashmeta;x-scheme-handler/mihomo;
+StartupWMClass=dev.clashon.clashon

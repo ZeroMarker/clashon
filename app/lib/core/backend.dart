@@ -133,4 +133,21 @@ class Backend {
       _run(['desktop', 'autostart', on ? 'on' : 'off', '--exec', exe]);
 
   Future<void> registerSchemes(String exe) => _run(['desktop', 'register', '--exec', exe]);
+
+  /// Returns the newer release (version, url), or null if up to date.
+  Future<(String, String)?> checkUpdate() async {
+    final j = jsonDecode(await _run(['update', 'check'])) as Map<String, dynamic>;
+    if (j['newer'] != true) return null;
+    return (j['latest'] as String, j['url'] as String);
+  }
+}
+
+/// Opens [url] in the default browser.
+Future<void> openUrl(String url) async {
+  final (cmd, args) = Platform.isWindows
+      ? ('rundll32', ['url.dll,FileProtocolHandler', url])
+      : Platform.isMacOS
+      ? ('open', [url])
+      : ('xdg-open', [url]);
+  await Process.run(cmd, args);
 }

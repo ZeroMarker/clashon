@@ -73,6 +73,8 @@ class FakeBackend implements Backend {
   Future<void> setAutostart(bool on, String exe) async => auto = on;
   @override
   Future<void> registerSchemes(String exe) async {}
+  @override
+  Future<(String, String)?> checkUpdate() async => ('9.9.9', 'https://example.com/r');
 }
 
 MihomoApi fakeApi(String controller, String secret) {
@@ -180,6 +182,7 @@ void main() {
     await tester.runAsync(s.init);
     await tester.pumpWidget(MaterialApp(home: HomePage(state: s)));
     expect(find.text('已停止'), findsOneWidget);
+    expect(find.text('发现新版本 9.9.9'), findsOneWidget);
 
     await tester.runAsync(s.toggleCore);
     await tester.pump();

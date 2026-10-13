@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../core/api.dart';
+import '../../core/backend.dart';
 import '../../state/app_state.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -29,6 +30,15 @@ class DashboardPage extends StatelessWidget {
             ),
           ],
         ),
+        if (s.update case (final version, final url))
+          Card(
+            color: theme.colorScheme.secondaryContainer,
+            child: ListTile(
+              leading: const Icon(Icons.system_update),
+              title: Text('发现新版本 $version'),
+              trailing: TextButton(onPressed: () => openUrl(url), child: const Text('下载')),
+            ),
+          ),
         const SizedBox(height: 16),
         Wrap(
           spacing: 16,
