@@ -37,6 +37,7 @@ class _GroupCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
         initiallyExpanded: initiallyExpanded,
+        expandedAlignment: Alignment.topLeft,
         title: Text(group.name),
         subtitle: Text('${group.type} · ${group.now ?? '-'}'),
         trailing: testing
