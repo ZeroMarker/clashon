@@ -131,6 +131,9 @@ func (c *Client) Logs(ctx context.Context, level string, fn func(LogEntry) bool)
 	stream := &http.Client{Transport: c.httpClient().Transport} // no timeout for streams
 	resp, err := stream.Do(req)
 	if err != nil {
+		if ctx.Err() != nil {
+			return nil
+		}
 		return err
 	}
 	defer resp.Body.Close()

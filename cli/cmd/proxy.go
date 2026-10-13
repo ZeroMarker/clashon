@@ -22,7 +22,7 @@ func proxyCmd() *cobra.Command {
 		Short:   "List groups, or the members of a group",
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			e, err := loadEnv()
+			e, err := requireCore()
 			if err != nil {
 				return err
 			}
@@ -74,7 +74,7 @@ func proxyCmd() *cobra.Command {
 		Short: "Select a proxy in a group",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			e, err := loadEnv()
+			e, err := requireCore()
 			if err != nil {
 				return err
 			}
@@ -93,7 +93,7 @@ func proxyCmd() *cobra.Command {
 		Short: "Measure latency",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			e, err := loadEnv()
+			e, err := requireCore()
 			if err != nil {
 				return err
 			}
@@ -142,7 +142,7 @@ func modeCmd() *cobra.Command {
 		Args:      cobra.MaximumNArgs(1),
 		ValidArgs: []string{"rule", "global", "direct"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			e, err := loadEnv()
+			e, err := requireCore()
 			if err != nil {
 				return err
 			}
@@ -170,7 +170,7 @@ func ruleCmd() *cobra.Command {
 		Short:   "List rules, optionally filtered by substring",
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			e, err := loadEnv()
+			e, err := requireCore()
 			if err != nil {
 				return err
 			}
@@ -198,7 +198,7 @@ func logCmd() *cobra.Command {
 		Use:   "log",
 		Short: "Stream core logs",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			e, err := loadEnv()
+			e, err := requireCore()
 			if err != nil {
 				return err
 			}

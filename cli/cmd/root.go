@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/signal"
 	"syscall"
@@ -46,6 +47,18 @@ func loadEnv() (*env, error) {
 	}, nil
 }
 
+// requireCore returns env for commands that talk to a running core.
+func requireCore() (*env, error) {
+	e, err := loadEnv()
+	if err != nil {
+		return nil, err
+	}
+	if _, err := e.daemon.PID(); errors.Is(err, daemon.ErrNotRunning) {
+		return nil, errors.New("core is not running, start it with `clashon up`")
+	}
+	return e, nil
+}
+
 func signalContext() (context.Context, context.CancelFunc) {
 	return signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 }
@@ -55,7 +68,7 @@ func Execute() error {
 	root := &cobra.Command{
 		Use:           "clashon",
 		Short:         "Clash (mihomo) client",
-		SilenceUsage:  true,
+		SilenceUsage: true,
 	}
 	root.AddCommand(upCmd(), downCmd(), statusCmd(), subCmd(), proxyCmd(), modeCmd(), ruleCmd(), logCmd(), versionCmd(), coreCmd())
 	return root.Execute()
