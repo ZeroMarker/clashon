@@ -21,6 +21,7 @@ type Settings struct {
 	AllowLAN   bool   `json:"allow-lan"`
 	Mode       string `json:"mode,omitempty"`      // rule | global | direct; empty keeps profile value
 	LogLevel   string `json:"log-level,omitempty"` // empty keeps profile value
+	TUN        bool   `json:"tun"`                 // route all traffic via a TUN device; needs privileges
 }
 
 // Defaults returns settings with a fresh random controller secret.
@@ -84,5 +85,36 @@ func Merge(profile []byte, s Settings) ([]byte, error) {
 	if s.LogLevel != "" {
 		doc["log-level"] = s.LogLevel
 	}
+	if s.TUN {
+		applyTUN(doc)
+	} else {
+		delete(doc, "tun")
+	}
 	return yaml.Marshal(doc)
+}
+
+// applyTUN enables a TUN device and the DNS hijacking it depends on.
+// Profile values for keys we do not need to force are kept.
+func applyTUN(doc map[string]any) {
+	tun, _ := doc["tun"].(map[string]any)
+	if tun == nil {
+		tun = map[string]any{"stack": "mixed"}
+	}
+	tun["enable"] = true
+	tun["auto-route"] = true
+	tun["auto-detect-interface"] = true
+	if _, ok := tun["dns-hijack"]; !ok {
+		tun["dns-hijack"] = []string{"any:53", "tcp://any:53"}
+	}
+	doc["tun"] = tun
+
+	dns, _ := doc["dns"].(map[string]any)
+	if dns == nil {
+		dns = map[string]any{
+			"enhanced-mode": "fake-ip",
+			"nameserver":    []string{"https://223.5.5.5/dns-query", "https://1.1.1.1/dns-query"},
+		}
+	}
+	dns["enable"] = true
+	doc["dns"] = dns
 }
