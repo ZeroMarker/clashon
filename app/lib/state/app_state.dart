@@ -54,7 +54,9 @@ class AppState extends ChangeNotifier {
   /// Reloads status and profiles, (re)connecting to the core if it is up.
   Future<void> refresh() => _guard(() async {
         final st = await backend.status();
-        (profiles, currentProfile) = await backend.profiles();
+        final (list, current) = await backend.profiles();
+        profiles = list;
+        currentProfile = current;
         final wasRunning = running;
         status = st;
         if (st.reachable && !wasRunning) {
@@ -190,7 +192,10 @@ class AppState extends ChangeNotifier {
   Future<void> _loadConnections() async {
     if (api == null) return;
     try {
-      (connections, uploadTotal, downloadTotal) = await api!.connections();
+      final (list, up, down) = await api!.connections();
+      connections = list;
+      uploadTotal = up;
+      downloadTotal = down;
       notifyListeners();
     } catch (_) {
       // transient; the next tick retries

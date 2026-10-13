@@ -42,17 +42,18 @@ class ProfilesPage extends StatelessWidget {
       ),
       body: s.profiles.isEmpty
           ? const Center(child: Text('还没有订阅'))
-          : ListView(
+          : RadioGroup<String>(
+              groupValue: s.currentProfile,
+              onChanged: (v) {
+                if (!s.busy && v != null) s.useProfile(v);
+              },
+              child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
                 for (final p in s.profiles)
                   Card(
                     child: ListTile(
-                      leading: Radio<String>(
-                        value: p.name,
-                        groupValue: s.currentProfile,
-                        onChanged: s.busy ? null : (v) => s.useProfile(v!),
-                      ),
+                      leading: Radio<String>(value: p.name, enabled: !s.busy),
                       title: Text(p.name),
                       subtitle: Text([
                         if (p.total != null) '${formatBytes(p.used ?? 0)} / ${formatBytes(p.total!)}',
@@ -74,6 +75,7 @@ class ProfilesPage extends StatelessWidget {
                     ),
                   ),
               ],
+            ),
             ),
     );
   }
