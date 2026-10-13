@@ -18,8 +18,10 @@ func newTestModel() *Model {
 		"GLOBAL": {Name: "GLOBAL", Type: "Selector", Now: "一分机场", All: []string{"一分机场", "自动选择", "HK 01"}},
 		"一分机场":   {Name: "一分机场", Type: "Selector", Now: "自动选择", All: []string{"自动选择", "HK 01", "US 02"}},
 		"自动选择":   {Name: "自动选择", Type: "URLTest", Now: "HK 01", All: []string{"HK 01", "US 02"}},
-		"HK 01":  {Name: "HK 01", Type: "Trojan", History: []struct{ Delay int `json:"delay"` }{{Delay: 120}}},
-		"US 02":  {Name: "US 02", Type: "Shadowsocks"},
+		"HK 01": {Name: "HK 01", Type: "Trojan", History: []struct {
+			Delay int `json:"delay"`
+		}{{Delay: 120}}},
+		"US 02": {Name: "US 02", Type: "Shadowsocks"},
 	})
 	m.Update(configsMsg(&api.Configs{Mode: "rule"}))
 	return m
