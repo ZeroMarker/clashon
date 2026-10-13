@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+# Let the core create a TUN device without running as root.
+setcap cap_net_admin,cap_net_bind_service=+ep /opt/clashon/clashon || true
+command -v update-desktop-database >/dev/null && update-desktop-database -q /usr/share/applications || true

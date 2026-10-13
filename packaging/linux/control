@@ -1,0 +1,12 @@
+Package: clashon
+Version: @VERSION@
+Architecture: amd64
+Maintainer: ZeroMarker <https://github.com/ZeroMarker/clashon>
+Installed-Size: @SIZE@
+Depends: libgtk-3-0, libayatana-appindicator3-1, libcap2-bin
+Section: net
+Priority: optional
+Homepage: https://github.com/ZeroMarker/clashon
+Description: Clash (mihomo) client: GUI, TUI and CLI
+ ClashOn bundles the mihomo core with a desktop GUI, a terminal UI and a
+ command line interface.
