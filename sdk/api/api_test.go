@@ -58,3 +58,34 @@ func TestClient(t *testing.T) {
 		t.Fatalf("logs = %v, %v", got, err)
 	}
 }
+
+func TestConnectionsAndTraffic(t *testing.T) {
+	var closed string
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /connections", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"uploadTotal":1,"downloadTotal":2,"connections":[{"id":"x","metadata":{"host":"a.com","destinationPort":"443"},"chains":["HK","Proxy"],"rule":"Match"}]}`))
+	})
+	mux.HandleFunc("DELETE /connections/{id}", func(w http.ResponseWriter, r *http.Request) {
+		closed = r.PathValue("id")
+		w.WriteHeader(204)
+	})
+	mux.HandleFunc("GET /traffic", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("{\"up\":1,\"down\":2}\n{\"up\":3,\"down\":4}\n"))
+	})
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+	c := New(srv.URL, "")
+	ctx := context.Background()
+
+	cs, err := c.Connections(ctx)
+	if err != nil || len(cs.Connections) != 1 || cs.Connections[0].Target() != "a.com:443" {
+		t.Fatalf("connections = %+v, %v", cs, err)
+	}
+	if err := c.CloseConnection(ctx, "x"); err != nil || closed != "x" {
+		t.Fatalf("close = %q, %v", closed, err)
+	}
+	var last Traffic
+	if err := c.Traffic(ctx, func(tr Traffic) bool { last = tr; return true }); err != nil || last.Down != 4 {
+		t.Fatalf("traffic = %+v, %v", last, err)
+	}
+}
