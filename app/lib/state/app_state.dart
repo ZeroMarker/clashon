@@ -31,6 +31,7 @@ class AppState extends ChangeNotifier {
   String mode = 'rule';
   bool systemProxy = false;
   bool autostart = false;
+  (String, String)? update; // newer release: (version, url)
 
   bool get tun => status?.tun ?? false;
   bool get tunReady => status?.tunReady ?? false;
@@ -55,6 +56,11 @@ class AppState extends ChangeNotifier {
     await refresh();
     await _guard(() async => systemProxy = await backend.systemProxy());
     await _guard(() async => autostart = await backend.autostart());
+    // Offline or rate-limited is not worth an error banner.
+    try {
+      update = await backend.checkUpdate();
+      notifyListeners();
+    } catch (_) {}
   }
 
   /// Reloads status and profiles, (re)connecting to the core if it is up.
