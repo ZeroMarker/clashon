@@ -16,15 +16,19 @@ class ConnectionsPage extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-          child: Row(children: [
-            Text('${s.connections.length} 个连接 · ↓ ${formatBytes(s.downloadTotal)} ↑ ${formatBytes(s.uploadTotal)}'),
-            const Spacer(),
-            TextButton.icon(
-              onPressed: s.connections.isEmpty ? null : () => s.closeConnection(),
-              icon: const Icon(Icons.clear_all),
-              label: const Text('全部关闭'),
-            ),
-          ]),
+          child: Row(
+            children: [
+              Text(
+                '${s.connections.length} 个连接 · ↓ ${formatBytes(s.downloadTotal)} ↑ ${formatBytes(s.uploadTotal)}',
+              ),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: s.connections.isEmpty ? null : () => s.closeConnection(),
+                icon: const Icon(Icons.clear_all),
+                label: const Text('全部关闭'),
+              ),
+            ],
+          ),
         ),
         Expanded(
           child: ListView.builder(
@@ -34,16 +38,26 @@ class ConnectionsPage extends StatelessWidget {
               return ListTile(
                 dense: true,
                 title: Text(c.host, maxLines: 1, overflow: TextOverflow.ellipsis),
-                subtitle: Text('${c.rule} · ${c.chain}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text('↓ ${formatBytes(c.download)}\n↑ ${formatBytes(c.upload)}',
-                      style: small, textAlign: TextAlign.right),
-                  IconButton(
-                    tooltip: '关闭',
-                    icon: const Icon(Icons.close, size: 18),
-                    onPressed: () => s.closeConnection(c.id),
-                  ),
-                ]),
+                subtitle: Text(
+                  '${c.rule} · ${c.chain}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '↓ ${formatBytes(c.download)}\n↑ ${formatBytes(c.upload)}',
+                      style: small,
+                      textAlign: TextAlign.right,
+                    ),
+                    IconButton(
+                      tooltip: '关闭',
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: () => s.closeConnection(c.id),
+                    ),
+                  ],
+                ),
               );
             },
           ),

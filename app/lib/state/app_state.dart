@@ -10,7 +10,7 @@ import '../core/backend.dart';
 /// CLI backend; live data comes from the mihomo controller.
 class AppState extends ChangeNotifier {
   AppState(this.backend, {MihomoApi Function(String controller, String secret)? apiFactory})
-      : _apiFactory = apiFactory ?? MihomoApi.new;
+    : _apiFactory = apiFactory ?? MihomoApi.new;
 
   final Backend backend;
   final MihomoApi Function(String, String) _apiFactory;
@@ -53,67 +53,66 @@ class AppState extends ChangeNotifier {
 
   /// Reloads status and profiles, (re)connecting to the core if it is up.
   Future<void> refresh() => _guard(() async {
-        final st = await backend.status();
-        final (list, current) = await backend.profiles();
-        profiles = list;
-        currentProfile = current;
-        final wasRunning = running;
-        status = st;
-        if (st.reachable && !wasRunning) {
-          _connect(st);
-        } else if (!st.reachable && wasRunning) {
-          _disconnect();
-        }
-        if (running) {
-          mode = st.mode ?? mode;
-          await _loadProxies();
-        }
-      });
+    final st = await backend.status();
+    final (list, current) = await backend.profiles();
+    profiles = list;
+    currentProfile = current;
+    final wasRunning = running;
+    status = st;
+    if (st.reachable && !wasRunning) {
+      _connect(st);
+    } else if (!st.reachable && wasRunning) {
+      _disconnect();
+    }
+    if (running) {
+      mode = st.mode ?? mode;
+      await _loadProxies();
+    }
+  });
 
   Future<void> toggleCore() => _guard(() async {
-        if (status?.running ?? false) {
-          await backend.down();
-        } else {
-          await backend.up();
-        }
-        await refresh();
-      }, busyFlag: true);
+    if (status?.running ?? false) {
+      await backend.down();
+    } else {
+      await backend.up();
+    }
+    await refresh();
+  }, busyFlag: true);
 
-  Future<void> addProfile(String name, String url) =>
-      _guard(() async {
-        await backend.addProfile(name, url);
-        await refresh();
-      }, busyFlag: true);
+  Future<void> addProfile(String name, String url) => _guard(() async {
+    await backend.addProfile(name, url);
+    await refresh();
+  }, busyFlag: true);
 
   Future<void> updateProfile(String name) => _guard(() async {
-        await backend.updateProfile(name);
-        await refresh();
-      }, busyFlag: true);
+    await backend.updateProfile(name);
+    await refresh();
+  }, busyFlag: true);
 
   Future<void> useProfile(String name) => _guard(() async {
-        await backend.useProfile(name);
-        await refresh();
-      }, busyFlag: true);
+    await backend.useProfile(name);
+    await refresh();
+  }, busyFlag: true);
 
   Future<void> removeProfile(String name) => _guard(() async {
-        await backend.removeProfile(name);
-        await refresh();
-      });
+    await backend.removeProfile(name);
+    await refresh();
+  });
 
   Future<void> setSystemProxy(bool on) => _guard(() async {
-        await backend.setSystemProxy(on);
-        systemProxy = on;
-      });
+    await backend.setSystemProxy(on);
+    systemProxy = on;
+  });
 
   Future<void> setMode(String m) => _guard(() async {
-        await api!.setMode(m);
-        mode = m;
-      });
+    await api!.setMode(m);
+    mode = m;
+  });
 
   Future<void> select(String group, String proxy) => _guard(() async {
-        await api!.select(group, proxy);
-        await _loadProxies();
-      });
+    await api!.select(group, proxy);
+    await _loadProxies();
+  });
 
   Future<void> testGroup(String group) async {
     if (api == null || testing.contains(group)) return;
@@ -130,9 +129,9 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> closeConnection([String? id]) => _guard(() async {
-        await api!.closeConnection(id);
-        await _loadConnections();
-      });
+    await api!.closeConnection(id);
+    await _loadConnections();
+  });
 
   /// Polls connections while a view needs them.
   void watchConnections(bool on) {

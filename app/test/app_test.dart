@@ -19,14 +19,14 @@ class FakeBackend implements Backend {
 
   @override
   Future<CoreStatus> status() async => CoreStatus.fromJson({
-        'running': running,
-        'reachable': running,
-        'profile': 'test',
-        'mode': 'rule',
-        'mixedPort': 7890,
-        'controller': '127.0.0.1:9090',
-        'secret': 's',
-      });
+    'running': running,
+    'reachable': running,
+    'profile': 'test',
+    'mode': 'rule',
+    'mixedPort': 7890,
+    'controller': '127.0.0.1:9090',
+    'secret': 's',
+  });
 
   @override
   Future<void> up() async => running = true;
@@ -35,16 +35,16 @@ class FakeBackend implements Backend {
 
   @override
   Future<(List<Profile>, String)> profiles() async => (
-        [
-          Profile.fromJson({
-            'name': 'test',
-            'url': 'https://x',
-            'updated': '2026-10-13T06:00:00Z',
-            'userinfo': {'upload': 1024, 'download': 1024, 'total': 1 << 30}
-          })
-        ],
-        'test'
-      );
+    [
+      Profile.fromJson({
+        'name': 'test',
+        'url': 'https://x',
+        'updated': '2026-10-13T06:00:00Z',
+        'userinfo': {'upload': 1024, 'download': 1024, 'total': 1 << 30},
+      }),
+    ],
+    'test',
+  );
 
   @override
   Future<void> addProfile(String name, String url) async => calls.add('add $name');
@@ -66,15 +66,32 @@ MihomoApi fakeApi(String controller, String secret) {
     switch (req.url.path) {
       case '/proxies':
         return http.Response(
-            jsonEncode({
-              'proxies': {
-                'GLOBAL': {'name': 'GLOBAL', 'type': 'Selector', 'now': 'Proxy', 'all': ['Proxy']},
-                'Proxy': {'name': 'Proxy', 'type': 'Selector', 'now': 'HK', 'all': ['HK', 'US']},
-                'HK': {'name': 'HK', 'type': 'Trojan', 'history': [{'delay': 88}]},
-                'US': {'name': 'US', 'type': 'Shadowsocks', 'history': []},
-              }
-            }),
-            200);
+          jsonEncode({
+            'proxies': {
+              'GLOBAL': {
+                'name': 'GLOBAL',
+                'type': 'Selector',
+                'now': 'Proxy',
+                'all': ['Proxy'],
+              },
+              'Proxy': {
+                'name': 'Proxy',
+                'type': 'Selector',
+                'now': 'HK',
+                'all': ['HK', 'US'],
+              },
+              'HK': {
+                'name': 'HK',
+                'type': 'Trojan',
+                'history': [
+                  {'delay': 88},
+                ],
+              },
+              'US': {'name': 'US', 'type': 'Shadowsocks', 'history': []},
+            },
+          }),
+          200,
+        );
       case '/proxies/Proxy':
         return http.Response('', 204);
       case '/traffic':

@@ -29,11 +29,19 @@ class LogsPage extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
           child: SelectableText.rich(
-            TextSpan(children: [
-              TextSpan(text: '${two(t.hour)}:${two(t.minute)}:${two(t.second)} ', style: TextStyle(color: scheme.outline)),
-              TextSpan(text: l.type.padRight(8), style: TextStyle(color: color)),
-              TextSpan(text: l.payload),
-            ]),
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: '${two(t.hour)}:${two(t.minute)}:${two(t.second)} ',
+                  style: TextStyle(color: scheme.outline),
+                ),
+                TextSpan(
+                  text: l.type.padRight(8),
+                  style: TextStyle(color: color),
+                ),
+                TextSpan(text: l.payload),
+              ],
+            ),
             style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
           ),
         );

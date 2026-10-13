@@ -53,13 +53,19 @@ class _HomePageState extends State<HomePage> {
                 labelType: NavigationRailLabelType.all,
                 leading: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Icon(Icons.bolt,
-                      size: 32, color: s.running ? Colors.green : Theme.of(context).disabledColor),
+                  child: Icon(
+                    Icons.bolt,
+                    size: 32,
+                    color: s.running ? Colors.green : Theme.of(context).disabledColor,
+                  ),
                 ),
                 destinations: [
                   for (final (icon, selected, label) in _destinations)
                     NavigationRailDestination(
-                        icon: Icon(icon), selectedIcon: Icon(selected), label: Text(label)),
+                      icon: Icon(icon),
+                      selectedIcon: Icon(selected),
+                      label: Text(label),
+                    ),
                 ],
               ),
               const VerticalDivider(width: 1),

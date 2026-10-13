@@ -70,14 +70,18 @@ class _ClashOnAppState extends State<ClashOnApp> with WindowListener, TrayListen
     if (_trayRunning == s.running && _trayProxy == s.systemProxy) return;
     _trayRunning = s.running;
     _trayProxy = s.systemProxy;
-    await trayManager.setContextMenu(Menu(items: [
-      MenuItem(key: 'show', label: '显示窗口'),
-      MenuItem.separator(),
-      MenuItem.checkbox(key: 'core', label: '内核运行', checked: s.running),
-      MenuItem.checkbox(key: 'sysproxy', label: '系统代理', checked: s.systemProxy),
-      MenuItem.separator(),
-      MenuItem(key: 'quit', label: '退出'),
-    ]));
+    await trayManager.setContextMenu(
+      Menu(
+        items: [
+          MenuItem(key: 'show', label: '显示窗口'),
+          MenuItem.separator(),
+          MenuItem.checkbox(key: 'core', label: '内核运行', checked: s.running),
+          MenuItem.checkbox(key: 'sysproxy', label: '系统代理', checked: s.systemProxy),
+          MenuItem.separator(),
+          MenuItem(key: 'quit', label: '退出'),
+        ],
+      ),
+    );
   }
 
   @override
@@ -137,7 +141,11 @@ class _ClashOnAppState extends State<ClashOnApp> with WindowListener, TrayListen
       title: 'ClashOn',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
-      darkTheme: ThemeData(colorSchemeSeed: Colors.indigo, brightness: Brightness.dark, useMaterial3: true),
+      darkTheme: ThemeData(
+        colorSchemeSeed: Colors.indigo,
+        brightness: Brightness.dark,
+        useMaterial3: true,
+      ),
       home: HomePage(state: widget.state),
     );
   }

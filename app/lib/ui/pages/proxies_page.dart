@@ -40,7 +40,11 @@ class _GroupCard extends StatelessWidget {
         title: Text(group.name),
         subtitle: Text('${group.type} · ${group.now ?? '-'}'),
         trailing: testing
-            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
             : IconButton(
                 tooltip: '测速',
                 icon: const Icon(Icons.speed),
@@ -83,10 +87,10 @@ class _ProxyChip extends StatelessWidget {
     final color = d <= 0
         ? scheme.outline
         : d < 300
-            ? Colors.green
-            : d < 800
-                ? Colors.orange
-                : scheme.error;
+        ? Colors.green
+        : d < 800
+        ? Colors.orange
+        : scheme.error;
     return SizedBox(
       width: 220,
       child: Material(
@@ -102,12 +106,16 @@ class _ProxyChip extends StatelessWidget {
               children: [
                 Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 2),
-                Row(children: [
-                  Text(proxy?.type ?? '', style: Theme.of(context).textTheme.bodySmall),
-                  const Spacer(),
-                  Text(d > 0 ? '${d}ms' : '-',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: color)),
-                ]),
+                Row(
+                  children: [
+                    Text(proxy?.type ?? '', style: Theme.of(context).textTheme.bodySmall),
+                    const Spacer(),
+                    Text(
+                      d > 0 ? '${d}ms' : '-',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: color),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

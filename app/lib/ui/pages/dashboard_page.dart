@@ -63,12 +63,14 @@ class DashboardPage extends StatelessWidget {
         const SizedBox(height: 24),
         Text('流量', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
-        Row(children: [
-          Icon(Icons.arrow_upward, size: 16, color: theme.colorScheme.tertiary),
-          Text(' ${formatBytes(s.traffic.up)}/s    '),
-          Icon(Icons.arrow_downward, size: 16, color: theme.colorScheme.primary),
-          Text(' ${formatBytes(s.traffic.down)}/s'),
-        ]),
+        Row(
+          children: [
+            Icon(Icons.arrow_upward, size: 16, color: theme.colorScheme.tertiary),
+            Text(' ${formatBytes(s.traffic.up)}/s    '),
+            Icon(Icons.arrow_downward, size: 16, color: theme.colorScheme.primary),
+            Text(' ${formatBytes(s.traffic.down)}/s'),
+          ],
+        ),
         const SizedBox(height: 8),
         SizedBox(
           height: 140,

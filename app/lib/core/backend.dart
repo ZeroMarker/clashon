@@ -14,15 +14,15 @@ class BackendException implements Exception {
 /// Status as printed by `clashon status --json`.
 class CoreStatus {
   CoreStatus.fromJson(Map<String, dynamic> j)
-      : running = j['running'] as bool? ?? false,
-        reachable = j['reachable'] as bool? ?? false,
-        pid = j['pid'] as int?,
-        version = j['version'] as String?,
-        profile = j['profile'] as String?,
-        mode = j['mode'] as String?,
-        mixedPort = j['mixedPort'] as int? ?? 0,
-        controller = j['controller'] as String? ?? '',
-        secret = j['secret'] as String? ?? '';
+    : running = j['running'] as bool? ?? false,
+      reachable = j['reachable'] as bool? ?? false,
+      pid = j['pid'] as int?,
+      version = j['version'] as String?,
+      profile = j['profile'] as String?,
+      mode = j['mode'] as String?,
+      mixedPort = j['mixedPort'] as int? ?? 0,
+      controller = j['controller'] as String? ?? '',
+      secret = j['secret'] as String? ?? '';
 
   final bool running;
   final bool reachable;
@@ -37,12 +37,12 @@ class CoreStatus {
 
 class Profile {
   Profile.fromJson(Map<String, dynamic> j)
-      : name = j['name'] as String,
-        url = j['url'] as String? ?? '',
-        updated = DateTime.tryParse(j['updated'] as String? ?? ''),
-        used = _used(j['userinfo']),
-        total = (j['userinfo'] as Map?)?['total'] as int?,
-        expire = DateTime.tryParse((j['userinfo'] as Map?)?['expire'] as String? ?? '');
+    : name = j['name'] as String,
+      url = j['url'] as String? ?? '',
+      updated = DateTime.tryParse(j['updated'] as String? ?? ''),
+      used = _used(j['userinfo']),
+      total = (j['userinfo'] as Map?)?['total'] as int?,
+      expire = DateTime.tryParse((j['userinfo'] as Map?)?['expire'] as String? ?? '');
 
   final String name;
   final String url;
