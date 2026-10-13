@@ -126,6 +126,40 @@ func downCmd() *cobra.Command {
 	}
 }
 
+// Status is the machine-readable output of `clashon status --json`.
+type Status struct {
+	Running    bool   `json:"running"`
+	PID        int    `json:"pid,omitempty"`
+	Reachable  bool   `json:"reachable"`
+	Version    string `json:"version,omitempty"`
+	Profile    string `json:"profile,omitempty"`
+	Mode       string `json:"mode,omitempty"`
+	MixedPort  int    `json:"mixedPort"`
+	Controller string `json:"controller"`
+	Secret     string `json:"secret"`
+}
+
+func (e *env) status(ctx context.Context) (*Status, error) {
+	st := &Status{MixedPort: e.Settings.MixedPort, Controller: e.Settings.Controller, Secret: e.Settings.Secret}
+	if p, err := e.Store.Current(); err == nil {
+		st.Profile = p.Name
+	}
+	pid, err := e.Daemon.PID()
+	if errors.Is(err, daemon.ErrNotRunning) {
+		return st, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	st.Running, st.PID = true, pid
+	v, verr := e.Client.Version(ctx)
+	cfg, cerr := e.Client.Configs(ctx)
+	if verr == nil && cerr == nil {
+		st.Reachable, st.Version, st.Mode, st.MixedPort = true, v, cfg.Mode, cfg.MixedPort
+	}
+	return st, nil
+}
+
 func statusCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "status",
@@ -135,29 +169,31 @@ func statusCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			cur := "-"
-			if p, err := e.Store.Current(); err == nil {
-				cur = p.Name
-			}
-			pid, err := e.Daemon.PID()
-			if errors.Is(err, daemon.ErrNotRunning) {
-				fmt.Printf("core:    stopped\nprofile: %s\n", cur)
-				return nil
-			}
+			st, err := e.status(cmd.Context())
 			if err != nil {
 				return err
 			}
-			ctx := cmd.Context()
-			v, verr := e.Client.Version(ctx)
-			cfg, cerr := e.Client.Configs(ctx)
-			if verr != nil || cerr != nil {
-				fmt.Printf("core:    running (pid %d), controller unreachable\nprofile: %s\n", pid, cur)
-				return nil
+			if jsonOut {
+				return printJSON(st)
 			}
-			fmt.Printf("core:    running (pid %d, mihomo %s)\nprofile: %s\nmode:    %s\nproxy:   127.0.0.1:%d\n", pid, v, cur, cfg.Mode, cfg.MixedPort)
+			switch {
+			case !st.Running:
+				fmt.Printf("core:    stopped\nprofile: %s\n", orDash(st.Profile))
+			case !st.Reachable:
+				fmt.Printf("core:    running (pid %d), controller unreachable\nprofile: %s\n", st.PID, orDash(st.Profile))
+			default:
+				fmt.Printf("core:    running (pid %d, mihomo %s)\nprofile: %s\nmode:    %s\nproxy:   127.0.0.1:%d\n", st.PID, st.Version, orDash(st.Profile), st.Mode, st.MixedPort)
+			}
 			return nil
 		},
 	}
+}
+
+func orDash(s string) string {
+	if s == "" {
+		return "-"
+	}
+	return s
 }
 
 func coreCmd() *cobra.Command {
