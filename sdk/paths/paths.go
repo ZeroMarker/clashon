@@ -23,10 +23,10 @@ func Default() (Layout, error) {
 	return Layout{Root: filepath.Join(dir, "clashon")}, nil
 }
 
-func (l Layout) Profiles() string    { return filepath.Join(l.Root, "profiles") }
+func (l Layout) Profiles() string     { return filepath.Join(l.Root, "profiles") }
 func (l Layout) ProfileIndex() string { return filepath.Join(l.Root, "profiles.json") }
-func (l Layout) Settings() string    { return filepath.Join(l.Root, "settings.json") }
-func (l Layout) CoreHome() string    { return filepath.Join(l.Root, "core") }
+func (l Layout) Settings() string     { return filepath.Join(l.Root, "settings.json") }
+func (l Layout) CoreHome() string     { return filepath.Join(l.Root, "core") }
 func (l Layout) RuntimeConfig() string {
 	return filepath.Join(l.Root, "core", "config.yaml")
 }

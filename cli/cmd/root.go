@@ -66,8 +66,8 @@ func signalContext() (context.Context, context.CancelFunc) {
 // Execute runs the root command.
 func Execute() error {
 	root := &cobra.Command{
-		Use:           "clashon",
-		Short:         "Clash (mihomo) client",
+		Use:          "clashon",
+		Short:        "Clash (mihomo) client",
 		SilenceUsage: true,
 	}
 	root.AddCommand(upCmd(), downCmd(), statusCmd(), subCmd(), proxyCmd(), modeCmd(), ruleCmd(), logCmd(), versionCmd(), coreCmd())
