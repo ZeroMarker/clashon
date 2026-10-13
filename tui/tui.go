@@ -67,18 +67,24 @@ type Model struct {
 
 // New returns a model bound to a's controller.
 func New(a *app.App) *Model {
+	profile := ""
+	if p, err := a.Store.Current(); err == nil {
+		profile = p.Name
+	}
+	return newModel(a.Client, profile)
+}
+
+func newModel(c *api.Client, profile string) *Model {
 	ctx, cancel := context.WithCancel(context.Background())
 	m := &Model{
-		client: a.Client,
-		ctx:    ctx,
-		cancel: cancel,
-		events: make(chan tea.Msg, 256),
-		filter: textinput.New(),
+		client:  c,
+		profile: profile,
+		ctx:     ctx,
+		cancel:  cancel,
+		events:  make(chan tea.Msg, 256),
+		filter:  textinput.New(),
 	}
 	m.filter.Prompt = "/"
-	if p, err := a.Store.Current(); err == nil {
-		m.profile = p.Name
-	}
 	return m
 }
 

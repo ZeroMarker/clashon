@@ -12,7 +12,7 @@ import (
 )
 
 func newTestModel() *Model {
-	m := &Model{}
+	m := newModel(nil, "test")
 	m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
 	m.Update(proxiesMsg{
 		"GLOBAL": {Name: "GLOBAL", Type: "Selector", Now: "一分机场", All: []string{"一分机场", "自动选择", "HK 01"}},
