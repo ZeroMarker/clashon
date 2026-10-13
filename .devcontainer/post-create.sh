@@ -16,9 +16,3 @@ if [ ! -d "$HOME/flutter" ]; then
 fi
 "$HOME/flutter/bin/flutter" config --no-analytics --enable-linux-desktop
 "$HOME/flutter/bin/flutter" precache --linux
-
-# Codespaces injects CLASHON_TEST_SUB_URL from secrets; mirror it into .env for local tools.
-if [ -n "${CLASHON_TEST_SUB_URL:-}" ] && [ ! -f .env ]; then
-  printf 'CLASHON_TEST_SUB_URL=%s\n' "$CLASHON_TEST_SUB_URL" > .env
-  chmod 600 .env
-fi
