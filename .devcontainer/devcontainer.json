@@ -1,0 +1,23 @@
+{
+  "name": "clashon",
+  "image": "mcr.microsoft.com/devcontainers/go:1",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/java:1": { "version": "17" }
+  },
+  "hostRequirements": { "cpus": 4, "memory": "8gb" },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/home/vscode/flutter/bin"
+  },
+  "forwardPorts": [9090, 7890],
+  "portsAttributes": {
+    "9090": { "label": "mihomo controller" },
+    "7890": { "label": "mihomo mixed proxy", "onAutoForward": "ignore" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["golang.go", "Dart-Code.flutter", "github.vscode-github-actions"]
+    }
+  }
+}
