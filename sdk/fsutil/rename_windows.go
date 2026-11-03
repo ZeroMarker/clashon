@@ -40,9 +40,7 @@ const (
 	fileRenameInfoEx              = 22 // FILE_INFO_BY_HANDLE_CLASS
 	fileRenameFlagReplaceIfExists = 0x1
 	fileRenameFlagPosixSemantics  = 0x2
-	fileRenameInfoFileNameOffset  = unsafe.Offsetof(fileRenameInfo{}.FileName
-)
-	fileRenameInfoHeaderSize       = int(fileRenameInfoFileNameOffset)
+	fileRenameInfoHeaderSize      = int(unsafe.Offsetof(fileRenameInfo{}.FileName))
 )
 
 // fileRenameInfo mirrors FILE_RENAME_INFO with the Flags member of the union.
