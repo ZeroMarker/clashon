@@ -2,7 +2,7 @@
 
 Clash (mihomo) client for CLI, TUI, desktop and mobile.
 
-See [docs/PLAN.md](docs/PLAN.md) for architecture and roadmap.
+See [docs/PLAN.md](docs/PLAN.md) for architecture and roadmap, and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the development environment (sizes, setup, tests, releases).
 
     git clone --recursive <repo>
 
