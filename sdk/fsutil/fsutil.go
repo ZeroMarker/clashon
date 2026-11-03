@@ -3,6 +3,7 @@
 package fsutil
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -30,4 +31,15 @@ func WriteFile(path string, data []byte, perm os.FileMode) error {
 		return err
 	}
 	return rename(tmp.Name(), path)
+}
+
+// ReadFile is os.ReadFile using Open, so it never blocks WriteFile from
+// another process.
+func ReadFile(path string) ([]byte, error) {
+	f, err := Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return io.ReadAll(f)
 }

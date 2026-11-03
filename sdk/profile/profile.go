@@ -174,7 +174,7 @@ func (idx *index) find(name string) *Profile {
 
 func (s *Store) load() (*index, error) {
 	idx := &index{}
-	b, err := os.ReadFile(s.Index)
+	b, err := fsutil.ReadFile(s.Index)
 	if os.IsNotExist(err) {
 		return idx, nil
 	}

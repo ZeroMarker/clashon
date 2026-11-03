@@ -13,6 +13,7 @@ import (
 	"github.com/ZeroMarker/clashon/core/runner"
 	"github.com/ZeroMarker/clashon/sdk/config"
 	"github.com/ZeroMarker/clashon/sdk/daemon"
+	"github.com/ZeroMarker/clashon/sdk/fsutil"
 	"github.com/ZeroMarker/clashon/sdk/privilege"
 )
 
@@ -22,7 +23,7 @@ func (e *env) writeRuntimeConfig() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	raw, err := os.ReadFile(e.Store.File(p.Name))
+	raw, err := fsutil.ReadFile(e.Store.File(p.Name))
 	if err != nil {
 		return "", err
 	}

@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/ZeroMarker/clashon/sdk/fsutil"
 )
 
 func TestStore(t *testing.T) {
@@ -83,7 +85,7 @@ func TestConcurrentReadWrite(t *testing.T) {
 				return
 			default:
 			}
-			if f, err := os.Open(s.Index); err == nil {
+			if f, err := fsutil.Open(s.Index); err == nil {
 				b := make([]byte, 64)
 				f.Read(b)
 				time.Sleep(time.Millisecond) // hold it open like a slow reader

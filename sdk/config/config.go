@@ -34,7 +34,7 @@ func Defaults() Settings {
 
 // LoadSettings reads path, creating it with Defaults if missing.
 func LoadSettings(path string) (Settings, error) {
-	b, err := os.ReadFile(path)
+	b, err := fsutil.ReadFile(path)
 	if os.IsNotExist(err) {
 		s := Defaults()
 		return s, SaveSettings(path, s)
