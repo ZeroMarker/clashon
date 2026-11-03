@@ -8,9 +8,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/ZeroMarker/clashon/sdk/fsutil"
 )
 
 // Settings are user-level overrides applied on top of every profile.
@@ -50,14 +51,11 @@ func LoadSettings(path string) (Settings, error) {
 
 // SaveSettings writes s to path.
 func SaveSettings(path string, s Settings) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return err
-	}
 	b, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, b, 0o600)
+	return fsutil.WriteFile(path, b, 0o600)
 }
 
 // Overridden top-level keys that conflict with ClashOn's own listeners.

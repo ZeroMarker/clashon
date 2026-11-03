@@ -12,6 +12,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/ZeroMarker/clashon/sdk/fsutil"
 	"github.com/ZeroMarker/clashon/sdk/subscription"
 )
 
@@ -153,7 +154,7 @@ func (s *Store) download(ctx context.Context, p *Profile) error {
 	if err != nil {
 		return err
 	}
-	if err := writeFile(s.File(p.Name), r.Body, 0o600); err != nil {
+	if err := fsutil.WriteFile(s.File(p.Name), r.Body, 0o600); err != nil {
 		return err
 	}
 	p.Updated = time.Now()
@@ -188,29 +189,5 @@ func (s *Store) save(idx *index) error {
 	if err != nil {
 		return err
 	}
-	return writeFile(s.Index, b, 0o600)
-}
-
-// writeFile writes atomically via a temp file in the same directory.
-func writeFile(path string, data []byte, perm os.FileMode) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return err
-	}
-	tmp, err := os.CreateTemp(filepath.Dir(path), ".tmp-*")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(tmp.Name())
-	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Chmod(perm); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(tmp.Name(), path)
+	return fsutil.WriteFile(s.Index, b, 0o600)
 }
