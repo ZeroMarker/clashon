@@ -7,6 +7,7 @@ import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'core/backend.dart';
+import 'core/log.dart';
 import 'state/app_state.dart';
 import 'ui/home.dart';
 
@@ -15,6 +16,7 @@ bool get isDesktop => Platform.isLinux || Platform.isMacOS || Platform.isWindows
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   final state = AppState(Backend());
+  log('start ${Platform.resolvedExecutable} args=$args cli=${state.backend.binary}');
   // Started at login: stay in the tray.
   final minimized = args.contains('--minimized');
   if (isDesktop) {
@@ -52,9 +54,13 @@ class _ClashOnAppState extends State<ClashOnApp> with WindowListener, TrayListen
   void initState() {
     super.initState();
     // Pick up core started/stopped from the CLI or TUI.
-    _poll = Timer.periodic(const Duration(seconds: 5), (_) => widget.state.refresh());
+    _poll = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => widget.state.refresh(keepError: true),
+    );
     // Covers the launch link and links forwarded from later launches.
     _links = AppLinks().uriLinkStream.listen((uri) async {
+      log('link $uri');
       if (isDesktop) await _show();
       await widget.state.importLink(uri.toString());
     });

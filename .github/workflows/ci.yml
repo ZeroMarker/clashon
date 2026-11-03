@@ -114,6 +114,7 @@ jobs:
           [System.Drawing.Graphics]::FromImage($img).CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
           $img.Save("$env:RUNNER_TEMP\\screen.png")
           Copy-Item "$env:APPDATA\\clashon\\core.log" $env:RUNNER_TEMP -ErrorAction SilentlyContinue
+          Copy-Item "$env:TEMP\\clashon-gui.log" $env:RUNNER_TEMP -ErrorAction SilentlyContinue
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -121,3 +122,4 @@ jobs:
           path: |
             ${{ runner.temp }}/screen.png
             ${{ runner.temp }}/core.log
+            ${{ runner.temp }}/clashon-gui.log

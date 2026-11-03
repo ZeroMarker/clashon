@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../core/api.dart';
 import '../core/backend.dart';
+import '../core/log.dart';
 
 /// Single source of truth for the UI. Lifecycle and profiles go through the
 /// CLI backend; live data comes from the mihomo controller.
@@ -64,7 +65,7 @@ class AppState extends ChangeNotifier {
   }
 
   /// Reloads status and profiles, (re)connecting to the core if it is up.
-  Future<void> refresh() => _guard(() async {
+  Future<void> refresh({bool keepError = false}) => _guard(keepError: keepError, () async {
     final st = await backend.status();
     final (list, current) = await backend.profiles();
     profiles = list;
@@ -231,16 +232,23 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<void> _guard(Future<void> Function() fn, {bool busyFlag = false}) async {
+  /// Runs [fn], reporting failures in [error]. Success clears a previous
+  /// error unless [keepError] (background polling must not hide errors).
+  Future<void> _guard(
+    Future<void> Function() fn, {
+    bool busyFlag = false,
+    bool keepError = false,
+  }) async {
     if (busyFlag) {
       busy = true;
       notifyListeners();
     }
     try {
       await fn();
-      error = null;
+      if (!keepError) error = null;
     } catch (e) {
       error = e.toString();
+      log('error: $error');
     } finally {
       if (busyFlag) busy = false;
       notifyListeners();

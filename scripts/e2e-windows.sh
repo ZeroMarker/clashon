@@ -29,6 +29,12 @@ echo "== CLI add with a Chinese name"
 "$C" sub add "$CLASHON_TEST_SUB_URL" -n "命令行 测试"
 has "命令行 测试"
 
+echo "== GUI started directly with a link (no shell involved)"
+"$dir/clashon-gui.exe" "clash://install-config?url=$enc&name=direct-link" &
+wait_for direct-link
+taskkill //IM clashon-gui.exe //F >/dev/null 2>&1 || true
+sleep 2
+
 echo "== link while the GUI is not running (cold start)"
 [ "$(gui_count)" = 0 ]
 open_link cold-link
