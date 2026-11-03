@@ -84,7 +84,14 @@ class Backend {
   Future<String> _run(List<String> args) async {
     final ProcessResult r;
     try {
-      r = await Process.run(binary, [...args, '--json']);
+      // The CLI always writes UTF-8; the default would be the system code page
+      // (e.g. GBK on Chinese Windows) and garble or break the JSON.
+      r = await Process.run(
+        binary,
+        [...args, '--json'],
+        stdoutEncoding: utf8,
+        stderrEncoding: utf8,
+      );
     } on ProcessException catch (e) {
       throw BackendException('cannot run $binary: ${e.message}');
     }

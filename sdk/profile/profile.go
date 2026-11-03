@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"time"
 
@@ -38,8 +37,6 @@ type Store struct {
 }
 
 var ErrNotFound = errors.New("profile not found")
-
-var validName = regexp.MustCompile(`^[\w.-]+$`)
 
 // File returns the YAML path of a profile.
 func (s *Store) File(name string) string { return filepath.Join(s.Dir, name+".yaml") }
@@ -80,8 +77,8 @@ func (s *Store) Current() (*Profile, error) {
 
 // Add downloads url as a new profile. The first profile becomes current.
 func (s *Store) Add(ctx context.Context, name, url string) (*Profile, error) {
-	if !validName.MatchString(name) {
-		return nil, fmt.Errorf("invalid profile name %q", name)
+	if err := ValidateName(name); err != nil {
+		return nil, err
 	}
 	idx, err := s.load()
 	if err != nil {

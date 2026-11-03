@@ -4,9 +4,10 @@ import "testing"
 
 func TestParse(t *testing.T) {
 	for _, tc := range []struct{ in, url, name string }{
-		{"clash://install-config?url=https%3A%2F%2Fa.com%2Fsub%3Ftoken%3Dx&name=My%20Air", "https://a.com/sub?token=x", "My-Air"},
+		{"clash://install-config?url=https%3A%2F%2Fa.com%2Fsub%3Ftoken%3Dx&name=My%20Air", "https://a.com/sub?token=x", "My Air"},
 		{"clashmeta://install-config?url=https://b.org/s", "https://b.org/s", "b.org"},
 		{"clash://install-config?url=https://c.net/s&name=../../etc", "https://c.net/s", "etc"},
+		{"clash://install-config?url=https%3A%2F%2Fd.com%2Fs&name=%E4%B8%80%E5%88%86%E6%9C%BA%E5%9C%BA", "https://d.com/s", "一分机场"},
 	} {
 		got, err := Parse(tc.in)
 		if err != nil {

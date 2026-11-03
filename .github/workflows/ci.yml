@@ -74,3 +74,50 @@ jobs:
           cache: true
       - run: flutter pub get
       - run: flutter build ${{ matrix.os == 'windows-latest' && 'windows' || 'macos' }} --release
+
+  windows-e2e:
+    runs-on: windows-latest
+    if: github.event_name == 'push'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive, fetch-depth: 0 }
+      - uses: actions/setup-go@v5
+        with: { go-version: stable }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - name: Check test subscription
+        id: sub
+        run: echo "ok=$([ -n "$CLASHON_TEST_SUB_URL" ] && echo 1 || echo 0)" >> "$GITHUB_OUTPUT"
+      - run: scripts/build-cli.sh windows amd64 "$RUNNER_TEMP/clashon.exe" ci
+      - name: GUI state layer against the real CLI
+        if: steps.sub.outputs.ok == '1'
+        working-directory: app
+        run: |
+          export CLASHON_BIN="$RUNNER_TEMP/clashon.exe" CLASHON_HOME="$RUNNER_TEMP/home-it"
+          flutter test integration_test -d windows
+      - run: flutter build windows --release
+        working-directory: app
+      - run: scripts/package-windows.sh ci
+      - name: Installer, CLI and clash:// links
+        if: steps.sub.outputs.ok == '1'
+        run: scripts/e2e-windows.sh
+      - name: Screenshot on failure
+        if: failure()
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.Windows.Forms,System.Drawing
+          $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+          $img = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+          [System.Drawing.Graphics]::FromImage($img).CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+          $img.Save("$env:RUNNER_TEMP\\screen.png")
+          Copy-Item "$env:APPDATA\\clashon\\core.log" $env:RUNNER_TEMP -ErrorAction SilentlyContinue
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: windows-e2e-debug
+          path: |
+            ${{ runner.temp }}/screen.png
+            ${{ runner.temp }}/core.log

@@ -4,8 +4,9 @@ package deeplink
 import (
 	"fmt"
 	"net/url"
-	"regexp"
 	"strings"
+
+	"github.com/ZeroMarker/clashon/sdk/profile"
 )
 
 // Install is a request to add a subscription.
@@ -13,8 +14,6 @@ type Install struct {
 	URL  string
 	Name string
 }
-
-var unsafe = regexp.MustCompile(`[^\w.-]+`)
 
 // Parse accepts clash://install-config?url=<escaped>&name=<name>
 // (also clashmeta:// and mihomo://). Name defaults to the subscription host.
@@ -41,8 +40,7 @@ func Parse(link string) (*Install, error) {
 	if name == "" {
 		name = su.Hostname()
 	}
-	name = strings.Trim(unsafe.ReplaceAllString(name, "-"), "-.")
-	if name == "" {
+	if name = profile.SanitizeName(name); name == "" {
 		name = "imported"
 	}
 	return &Install{URL: sub, Name: name}, nil
